@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import dynamic from "next/dynamic";
 import { analyzeDeal, FinancingProfile, PropertyInputs } from "@/lib/underwriting";
 import { DEFAULT_PROFILE } from "@/lib/defaults";
 import type { PropertyFacts } from "@/lib/rentcast";
@@ -10,6 +11,9 @@ import { money } from "@/lib/format";
 import { Card, Field, NumberInput, inputCls } from "./ui";
 import { ResultsPanel } from "./ResultsPanel";
 import { SensitivityPanel } from "./SensitivityPanel";
+
+// Leaflet touches `window` at import time — client-only
+const MapPanel = dynamic(() => import("./MapPanel"), { ssr: false });
 
 const n = (s: string): number => {
   const v = Number(s);
@@ -53,6 +57,7 @@ export function AnalyzerClient() {
   const [saving, setSaving] = useState(false);
   const [savedMsg, setSavedMsg] = useState<string | null>(null);
   const [loadedDeal, setLoadedDeal] = useState<DealRow | null>(null);
+  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
 
   const set = useCallback(
     (patch: Partial<FormState>) => setForm((f) => ({ ...f, ...patch })),
@@ -64,6 +69,23 @@ export function AnalyzerClient() {
       .then((r) => r.json())
       .then((d) => d.profile && setProfile(d.profile))
       .catch(() => {});
+  }, []);
+
+  // Nominatim fallback so the map works even without RentCast coordinates
+  const geocode = useCallback(async (addr: string) => {
+    try {
+      const res = await fetch("/api/geocode", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ address: addr }),
+      });
+      const data = await res.json();
+      if (typeof data.lat === "number" && typeof data.lng === "number") {
+        setCoords({ lat: data.lat, lng: data.lng });
+      }
+    } catch {
+      // no map, no drama — the analyzer works without it
+    }
   }, []);
 
   // Load an existing deal when linked as /?deal=<id>
@@ -88,9 +110,10 @@ export function AnalyzerClient() {
           listedTaxesAnnual:
             i.listedTaxesAnnual !== undefined ? String(i.listedTaxesAnnual) : "",
         });
+        geocode(deal.address);
       })
       .catch(() => setLookupMsg("Could not load that saved deal."));
-  }, [dealId]);
+  }, [dealId, geocode]);
 
   const inputs: PropertyInputs = useMemo(
     () => ({
@@ -115,6 +138,7 @@ export function AnalyzerClient() {
     setLooking(true);
     setLookupMsg(null);
     setFacts(null);
+    setCoords(null);
     try {
       const res = await fetch("/api/lookup", {
         method: "POST",
@@ -126,14 +150,21 @@ export function AnalyzerClient() {
         setLookupMsg(
           "No RentCast API key configured — running in manual mode. Enter the numbers from the listing below.",
         );
+        geocode(address);
         return;
       }
       if (!res.ok) {
         setLookupMsg(`Lookup failed: ${data.error ?? res.statusText}. Enter numbers manually.`);
+        geocode(address);
         return;
       }
       const f: PropertyFacts = data.facts;
       setFacts(f);
+      if (typeof f.latitude === "number" && typeof f.longitude === "number") {
+        setCoords({ lat: f.latitude, lng: f.longitude });
+      } else {
+        geocode(address);
+      }
       setLookupMsg(
         data.cached
           ? "Loaded from cache (no API credits used). Every field is editable."
@@ -149,6 +180,7 @@ export function AnalyzerClient() {
       });
     } catch {
       setLookupMsg("Lookup failed (network). Enter numbers manually.");
+      geocode(address);
     } finally {
       setLooking(false);
     }
@@ -197,6 +229,7 @@ export function AnalyzerClient() {
     setFacts(null);
     setLookupMsg(null);
     setSavedMsg(null);
+    setCoords(null);
     setForm(EMPTY_FORM);
     router.replace("/");
   }
@@ -263,6 +296,15 @@ export function AnalyzerClient() {
           </div>
         ) : null}
       </Card>
+
+      {coords ? (
+        <MapPanel
+          lat={coords.lat}
+          lng={coords.lng}
+          address={address}
+          onUseRent={(r) => set({ rent: String(r) })}
+        />
+      ) : null}
 
       <div className="grid gap-4 lg:grid-cols-[minmax(300px,380px)_1fr]">
         <Card title="Deal inputs" className="h-fit">

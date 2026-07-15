@@ -6,6 +6,13 @@ structure.
 
 ## What it does
 
+- **Map** (on the analyzer) — the subject property plus surrounding **active
+  listings**, toggleable between **For sale** (flip/resale comps: price,
+  $/sqft, days on market) and **For rent** (long-term rental comps: rent,
+  rent/sqft). Radius 0.5–3 mi, median summary bar, and one-click
+  "use as rent" from any rental comp or the median. Geocoding falls back to
+  OpenStreetMap Nominatim, so the map works even without a RentCast key
+  (surrounding listings do need the key).
 - **Analyzer** (`/`) — look up an address (RentCast) or enter listing numbers
   manually. Computes the full underwriting live:
   - P&I on the DSCR leg (default 75% LTV, 6.50%, 30yr)
