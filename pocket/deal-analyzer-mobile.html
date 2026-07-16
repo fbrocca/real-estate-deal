@@ -1,0 +1,711 @@
+<title>Deal Analyzer — Mobile</title>
+<style>
+  :root {
+    --bg: #f4f7f5;
+    --surface: #ffffff;
+    --surface-2: #eef2ef;
+    --border: #d9e2dc;
+    --text: #10201a;
+    --muted: #5b6b63;
+    --faint: #8a988f;
+    --accent: #059669;
+    --accent-ink: #ffffff;
+    --pass: #059669;
+    --pass-bg: #05966914;
+    --marginal: #b45309;
+    --marginal-bg: #b4530914;
+    --fail: #dc2647;
+    --fail-bg: #dc264712;
+    --chip-border: #c9d6cf;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #060d18;
+      --surface: #0c1626;
+      --surface-2: #101d31;
+      --border: #1d2c42;
+      --text: #e6edf3;
+      --muted: #93a4b8;
+      --faint: #5c6f85;
+      --accent: #10b981;
+      --accent-ink: #04120c;
+      --pass: #34d399;
+      --pass-bg: #34d3991a;
+      --marginal: #fbbf24;
+      --marginal-bg: #fbbf241a;
+      --fail: #fb7185;
+      --fail-bg: #fb718518;
+      --chip-border: #2a3c56;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #060d18; --surface: #0c1626; --surface-2: #101d31; --border: #1d2c42;
+    --text: #e6edf3; --muted: #93a4b8; --faint: #5c6f85;
+    --accent: #10b981; --accent-ink: #04120c;
+    --pass: #34d399; --pass-bg: #34d3991a;
+    --marginal: #fbbf24; --marginal-bg: #fbbf241a;
+    --fail: #fb7185; --fail-bg: #fb718518;
+    --chip-border: #2a3c56;
+  }
+  :root[data-theme="light"] {
+    --bg: #f4f7f5; --surface: #ffffff; --surface-2: #eef2ef; --border: #d9e2dc;
+    --text: #10201a; --muted: #5b6b63; --faint: #8a988f;
+    --accent: #059669; --accent-ink: #ffffff;
+    --pass: #059669; --pass-bg: #05966914;
+    --marginal: #b45309; --marginal-bg: #b4530914;
+    --fail: #dc2647; --fail-bg: #dc264712;
+    --chip-border: #c9d6cf;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    -webkit-text-size-adjust: 100%;
+  }
+  .wrap { max-width: 640px; margin: 0 auto; padding: 0 14px 96px; }
+
+  header.app {
+    display: flex; align-items: baseline; justify-content: space-between;
+    padding: 16px 2px 10px;
+  }
+  header.app .brand {
+    font-size: 13px; font-weight: 800; letter-spacing: 0.14em; color: var(--accent);
+  }
+  header.app .tag { font-size: 11px; color: var(--faint); }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px;
+    margin: 12px 0;
+  }
+  .card h2 {
+    margin: 0 0 10px;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--muted);
+  }
+
+  label.f { display: block; margin-bottom: 10px; }
+  label.f > span {
+    display: block; font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 4px;
+  }
+  label.f small { display:block; font-size: 11px; color: var(--faint); margin-top: 3px; }
+  input[type=text], input[type=number] {
+    width: 100%;
+    background: var(--bg);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    padding: 10px 12px;
+    font-size: 16px; /* prevents iOS zoom-on-focus */
+    font-variant-numeric: tabular-nums;
+  }
+  input:focus { outline: 2px solid var(--accent); outline-offset: -1px; border-color: transparent; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  .check { display: flex; gap: 8px; align-items: flex-start; margin: 6px 0 10px; }
+  .check input { width: 18px; height: 18px; accent-color: var(--accent); margin-top: 2px; }
+  .check span { font-size: 13px; }
+  .check small { display: block; color: var(--faint); font-size: 11px; }
+
+  button.primary {
+    width: 100%;
+    background: var(--accent); color: var(--accent-ink);
+    border: 0; border-radius: 10px;
+    padding: 12px; font-size: 15px; font-weight: 700; cursor: pointer;
+  }
+  button.primary:disabled { opacity: 0.4; }
+  button.ghost {
+    background: none; border: 1px solid var(--chip-border); color: var(--muted);
+    border-radius: 8px; padding: 6px 10px; font-size: 12px; cursor: pointer;
+  }
+  button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .verdict {
+    display: flex; align-items: center; justify-content: space-between;
+    border-radius: 14px; padding: 14px 16px; margin: 12px 0;
+    border: 1px solid;
+  }
+  .verdict .n { font-size: 30px; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1.1; }
+  .verdict .lbl { font-size: 10px; font-weight: 700; letter-spacing: 0.12em; opacity: 0.75; }
+  .verdict .v { font-size: 20px; font-weight: 800; text-align: right; }
+  .verdict .sub { font-size: 11px; opacity: 0.8; text-align: right; }
+  .verdict.PASS { color: var(--pass); background: var(--pass-bg); border-color: var(--pass); }
+  .verdict.MARGINAL { color: var(--marginal); background: var(--marginal-bg); border-color: var(--marginal); }
+  .verdict.FAIL { color: var(--fail); background: var(--fail-bg); border-color: var(--fail); }
+
+  .warn {
+    border: 1px solid var(--marginal); background: var(--marginal-bg); color: var(--marginal);
+    border-radius: 10px; padding: 10px 12px; font-size: 13px; margin: 12px 0;
+  }
+
+  .row { display: flex; justify-content: space-between; align-items: baseline; padding: 3px 0; gap: 12px; }
+  .row .k { color: var(--muted); font-size: 13px; }
+  .row .v { font-variant-numeric: tabular-nums; font-size: 14px; }
+  .row.total { border-top: 1px solid var(--border); margin-top: 6px; padding-top: 8px; font-weight: 700; }
+  .pos { color: var(--pass); } .neg { color: var(--fail); }
+
+  .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 12px 0; }
+  .stat {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 10px 12px;
+  }
+  .stat .k { font-size: 11px; color: var(--faint); }
+  .stat .v { font-size: 17px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .stat .s { font-size: 10px; color: var(--faint); }
+
+  .note { font-size: 12px; color: var(--faint); margin: 4px 2px 12px; }
+
+  .slider { margin-bottom: 12px; }
+  .slider .head { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 2px; }
+  .slider .head b { font-variant-numeric: tabular-nums; }
+  input[type=range] { width: 100%; accent-color: var(--accent); }
+
+  details { margin: 12px 0; }
+  details > summary {
+    cursor: pointer; list-style: none;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+    padding: 12px 14px;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted);
+  }
+  details[open] > summary { border-radius: 14px 14px 0 0; }
+  details > .body {
+    border: 1px solid var(--border); border-top: 0; border-radius: 0 0 14px 14px;
+    background: var(--surface); padding: 14px;
+  }
+  summary::-webkit-details-marker { display: none; }
+  summary::after { content: "＋"; float: right; }
+  details[open] summary::after { content: "－"; }
+
+  .deal {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    padding: 10px 0; border-bottom: 1px solid var(--border);
+  }
+  .deal:last-child { border-bottom: 0; }
+  .deal .name { font-weight: 600; font-size: 14px; }
+  .deal .addr { font-size: 11px; color: var(--faint); max-width: 46vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .deal .m { text-align: right; font-variant-numeric: tabular-nums; font-size: 12px; }
+  .chip {
+    display: inline-block; border-radius: 999px; padding: 1px 8px; font-size: 11px; font-weight: 700;
+  }
+  .chip.PASS { color: var(--pass); background: var(--pass-bg); }
+  .chip.MARGINAL { color: var(--marginal); background: var(--marginal-bg); }
+  .chip.FAIL { color: var(--fail); background: var(--fail-bg); }
+
+  .bar {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 10;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    padding: 10px 14px calc(10px + env(safe-area-inset-bottom));
+  }
+  .bar .inner { max-width: 640px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+  .bar .carry { text-align: right; }
+  .bar .carry b { display: block; font-size: 15px; font-variant-numeric: tabular-nums; }
+  .bar .carry span { font-size: 10px; color: var(--faint); }
+  .chip.big { font-size: 13px; padding: 5px 10px; }
+
+  .empty { text-align: center; color: var(--faint); font-size: 13px; padding: 20px 0; }
+  @media (prefers-reduced-motion: no-preference) {
+    details > .body { animation: fade .18s ease; }
+    @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+  }
+</style>
+
+<div class="wrap">
+  <header class="app">
+    <span class="brand">DEAL ANALYZER</span>
+    <span class="tag">HELOC + DSCR · pocket edition</span>
+  </header>
+
+  <section class="card">
+    <h2>Deal inputs</h2>
+    <label class="f"><span>Address</span>
+      <input type="text" id="address" placeholder="936 Lansing Dr Unit D, Mt Pleasant, SC" autocomplete="off">
+    </label>
+    <label class="f"><span>Nickname (optional)</span>
+      <input type="text" id="nickname" placeholder="Lansing condo" autocomplete="off">
+    </label>
+    <div class="grid2">
+      <label class="f"><span>Purchase price ($)</span>
+        <input type="number" id="price" inputmode="decimal" placeholder="420000">
+      </label>
+      <label class="f"><span>Monthly rent ($)</span>
+        <input type="number" id="rent" inputmode="decimal" placeholder="2700">
+      </label>
+      <label class="f"><span>HOA ($/mo)</span>
+        <input type="number" id="hoa" inputmode="decimal" value="0">
+      </label>
+      <label class="f"><span>Insurance ($/mo)</span>
+        <input type="number" id="insurance" inputmode="decimal" value="150">
+      </label>
+    </div>
+    <label class="f"><span>Rehab budget ($)</span>
+      <input type="number" id="rehab" inputmode="decimal" value="0">
+      <small>Rides the HELOC and all-in basis — never DSCR.</small>
+    </label>
+    <label class="check">
+      <input type="checkbox" id="taxesAuto" checked>
+      <span>Compute taxes at investment rate
+        <small>6% assessment ratio × full millage. Uncheck to enter a known figure.</small>
+      </span>
+    </label>
+    <div class="grid2">
+      <label class="f" id="taxesManualWrap" hidden><span>Taxes ($/mo)</span>
+        <input type="number" id="taxesMonthly" inputmode="decimal" placeholder="630">
+      </label>
+      <label class="f"><span>Taxes on listing ($/yr)</span>
+        <input type="number" id="listedTaxes" inputmode="decimal" placeholder="4656">
+        <small>Flags owner-occupied figures.</small>
+      </label>
+    </div>
+    <button class="primary" id="saveBtn" disabled>Save deal</button>
+  </section>
+
+  <div id="results" hidden>
+    <div class="verdict" id="verdict">
+      <div><div class="lbl">DSCR</div><div class="n" id="dscrN">—</div></div>
+      <div><div class="v" id="dscrV">—</div><div class="sub" id="dscrSub"></div></div>
+    </div>
+
+    <div class="warn" id="taxWarn" hidden></div>
+
+    <section class="card">
+      <h2 id="pitiaTitle">PITIA — DSCR loan leg</h2>
+      <div class="row"><span class="k">Loan amount</span><span class="v" id="loan"></span></div>
+      <div class="row"><span class="k" id="piK">P&amp;I</span><span class="v" id="pi"></span></div>
+      <div class="row"><span class="k" id="taxK">Taxes</span><span class="v" id="taxes"></span></div>
+      <div class="row"><span class="k">Insurance</span><span class="v" id="ins"></span></div>
+      <div class="row"><span class="k">HOA</span><span class="v" id="hoaV"></span></div>
+      <div class="row total"><span class="k">PITIA</span><span class="v" id="pitia"></span></div>
+    </section>
+
+    <section class="card">
+      <h2 id="helocTitle">HELOC leg</h2>
+      <div class="row"><span class="k">Down payment</span><span class="v" id="down"></span></div>
+      <div class="row"><span class="k">Closing costs</span><span class="v" id="closing"></span></div>
+      <div class="row"><span class="k">Rehab</span><span class="v" id="rehabV"></span></div>
+      <div class="row total"><span class="k">Total draw</span><span class="v" id="draw"></span></div>
+      <div class="row"><span class="k">HELOC payment</span><span class="v" id="helocIO"></span></div>
+      <p class="note" style="margin:8px 0 0">Never enters the lender's DSCR — always enters your carry.</p>
+    </section>
+
+    <section class="card">
+      <h2>Monthly cash flow</h2>
+      <div class="row"><span class="k">Rent</span><span class="v pos" id="cfRent"></span></div>
+      <div class="row"><span class="k">PITIA</span><span class="v" id="cfPitia"></span></div>
+      <div class="row"><span class="k">HELOC interest</span><span class="v" id="cfHeloc"></span></div>
+      <div class="row total"><span class="k">Carry (before reserves)</span><span class="v" id="carry"></span></div>
+      <div class="row"><span class="k" id="vacK">Vacancy reserve</span><span class="v" id="vac"></span></div>
+      <div class="row"><span class="k">Maintenance reserve</span><span class="v" id="maint"></span></div>
+      <div class="row total"><span class="k">All-in carry</span><span class="v" id="allIn"></span></div>
+    </section>
+
+    <div class="stats">
+      <div class="stat"><div class="k">GRM</div><div class="v" id="grm"></div><div class="s">price ÷ annual rent</div></div>
+      <div class="stat"><div class="k">Cap rate</div><div class="v" id="cap"></div><div class="s">NOI ÷ all-in basis</div></div>
+      <div class="stat"><div class="k">All-in basis</div><div class="v" id="basis"></div><div class="s">price + rehab</div></div>
+      <div class="stat"><div class="k">NOI</div><div class="v" id="noi"></div><div class="s">per year</div></div>
+    </div>
+
+    <section class="card">
+      <h2>Break-evens</h2>
+      <div class="row"><span class="k" id="beFloorK">Rent for DSCR 1.00</span><span class="v" id="beFloor"></span></div>
+      <div class="row"><span class="k">Rent for zero carry</span><span class="v" id="beZero"></span></div>
+      <div class="row"><span class="k">Rent for zero all-in carry</span><span class="v" id="beZeroAll"></span></div>
+      <div class="row" id="bePriceRow"><span class="k">Max price at this rent</span><span class="v" id="bePrice"></span></div>
+    </section>
+
+    <section class="card">
+      <h2>What if?</h2>
+      <div class="slider"><div class="head"><span>Rent</span><b id="wRentL"></b></div>
+        <input type="range" id="wRent"></div>
+      <div class="slider"><div class="head"><span>DSCR rate</span><b id="wRateL"></b></div>
+        <input type="range" id="wRate" min="0.05" max="0.085" step="0.00125"></div>
+      <div class="slider"><div class="head"><span>Price</span><b id="wPriceL"></b></div>
+        <input type="range" id="wPrice"></div>
+      <div class="stats" style="grid-template-columns:1fr 1fr 1fr; margin:0">
+        <div class="stat"><div class="k">DSCR</div><div class="v" id="wDscr"></div></div>
+        <div class="stat"><div class="k">Carry</div><div class="v" id="wCarry"></div></div>
+        <div class="stat"><div class="k">All-in</div><div class="v" id="wAllIn"></div></div>
+      </div>
+    </section>
+  </div>
+
+  <section class="card" id="dealsCard">
+    <h2>Saved deals</h2>
+    <div id="dealsList"><p class="empty">Nothing saved yet — run a deal and hit “Save deal”.</p></div>
+  </section>
+
+  <details>
+    <summary>Financing profile</summary>
+    <div class="body">
+      <div class="grid2">
+        <label class="f"><span>DSCR rate (%)</span><input type="number" id="pDscrRate" step="0.125" inputmode="decimal"></label>
+        <label class="f"><span>LTV (%)</span><input type="number" id="pLtv" step="5" inputmode="decimal"></label>
+        <label class="f"><span>Term (years)</span><input type="number" id="pTerm" step="5" inputmode="decimal"></label>
+        <label class="f"><span>DSCR floor</span><input type="number" id="pFloor" step="0.05" inputmode="decimal"></label>
+        <label class="f"><span>HELOC rate (%)</span><input type="number" id="pHeloc" step="0.01" inputmode="decimal"></label>
+        <label class="f"><span>Closing costs (%)</span><input type="number" id="pClosing" step="0.5" inputmode="decimal"></label>
+        <label class="f"><span>Assessment ratio (%)</span><input type="number" id="pRatio" step="1" inputmode="decimal"></label>
+        <label class="f"><span>Millage (mills)</span><input type="number" id="pMillage" step="5" inputmode="decimal"></label>
+        <label class="f"><span>Vacancy (%)</span><input type="number" id="pVacancy" step="1" inputmode="decimal"></label>
+        <label class="f"><span>Maintenance ($/mo)</span><input type="number" id="pMaint" step="50" inputmode="decimal"></label>
+      </div>
+      <p class="note" style="margin:0">Changes apply immediately and are remembered on this phone.</p>
+    </div>
+  </details>
+
+  <p class="note">Pocket edition — the underwriting engine only. Address lookup, comps map, and shared deal storage live in the full app. Data stays in this browser.</p>
+</div>
+
+<div class="bar" id="bar" hidden>
+  <div class="inner">
+    <span class="chip big" id="barChip"></span>
+    <span class="carry"><b id="barCarry"></b><span>all-in carry</span></span>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ---------- engine (mirrors src/lib/underwriting.ts) ---------- */
+
+  var DEFAULT_PROFILE = {
+    dscrRate: 0.065, ltv: 0.75, termYears: 30, dscrFloor: 1.0,
+    helocRate: 0.0644, closingCostPct: 0.02,
+    taxAssessmentRatio: 0.06, millage: 0.3,
+    vacancyPct: 0.05, maintenanceMonthly: 200
+  };
+
+  function monthlyPI(loan, annualRate, years) {
+    var n = years * 12;
+    if (loan <= 0 || n <= 0) return 0;
+    if (annualRate === 0) return loan / n;
+    var r = annualRate / 12, f = Math.pow(1 + r, n);
+    return (loan * r * f) / (f - 1);
+  }
+  function piFactor(annualRate, years) {
+    var n = years * 12;
+    if (n <= 0) return 0;
+    if (annualRate === 0) return 1 / n;
+    var r = annualRate / 12, f = Math.pow(1 + r, n);
+    return (r * f) / (f - 1);
+  }
+
+  function analyze(p, f) {
+    var loan = p.price * f.ltv;
+    var down = p.price - loan;
+    var pi = monthlyPI(loan, f.dscrRate, f.termYears);
+    var taxesComputed = p.taxesMonthly == null;
+    var taxes = taxesComputed
+      ? (p.price * f.taxAssessmentRatio * f.millage) / 12
+      : p.taxesMonthly;
+    var pitia = pi + taxes + p.insuranceMonthly + p.hoaMonthly;
+    var dscr = pitia > 0 ? p.rent / pitia : 0;
+    var closing = p.price * f.closingCostPct;
+    var draw = down + closing + p.rehab;
+    var helocIO = (draw * f.helocRate) / 12;
+    var carry = p.rent - pitia - helocIO;
+    var vac = p.rent * f.vacancyPct;
+    var allIn = carry - vac - f.maintenanceMonthly;
+    var annualRent = p.rent * 12;
+    var noi = annualRent - (taxes + p.insuranceMonthly + p.hoaMonthly + vac + f.maintenanceMonthly) * 12;
+    var basis = p.price + p.rehab;
+    var verdict = dscr >= f.dscrFloor ? "PASS" : dscr >= f.dscrFloor - 0.05 ? "MARGINAL" : "FAIL";
+    var ownerOccWarn = p.listedTaxesAnnual != null && taxesComputed &&
+      p.listedTaxesAnnual < taxes * 12 * 0.75;
+    return {
+      loan: loan, down: down, pi: pi, taxes: taxes, taxesComputed: taxesComputed,
+      pitia: pitia, dscr: dscr, verdict: verdict, closing: closing, draw: draw,
+      helocIO: helocIO, carry: carry, vac: vac, allIn: allIn,
+      grm: annualRent > 0 ? p.price / annualRent : 0,
+      noi: noi, cap: basis > 0 ? noi / basis : 0, basis: basis,
+      ownerOccWarn: ownerOccWarn
+    };
+  }
+
+  function breakEvens(p, f, a) {
+    var be = {
+      floor: a.pitia * f.dscrFloor,
+      zero: a.pitia + a.helocIO,
+      zeroAll: f.vacancyPct < 1 ? (a.pitia + a.helocIO + f.maintenanceMonthly) / (1 - f.vacancyPct) : Infinity,
+      maxPrice: null
+    };
+    if (p.taxesMonthly == null && f.dscrFloor > 0) {
+      var perPI = piFactor(f.dscrRate, f.termYears) * f.ltv;
+      var perTax = (f.taxAssessmentRatio * f.millage) / 12;
+      var target = p.rent / f.dscrFloor - p.insuranceMonthly - p.hoaMonthly;
+      be.maxPrice = perPI + perTax > 0 && target > 0 ? target / (perPI + perTax) : 0;
+    }
+    return be;
+  }
+
+  /* ---------- formatting ---------- */
+
+  function money(x, d) {
+    d = d || 0;
+    return x.toLocaleString("en-US", { style: "currency", currency: "USD", minimumFractionDigits: d, maximumFractionDigits: d });
+  }
+  function signed(x) {
+    var r = Math.round(x), s = money(Math.abs(r));
+    return r > 0 ? "+" + s : r < 0 ? "-" + s : s;
+  }
+  function pct(x, d) { return (x * 100).toFixed(d == null ? 2 : d) + "%"; }
+
+  /* ---------- state ---------- */
+
+  var $ = function (id) { return document.getElementById(id); };
+  var PROFILE_KEY = "da-profile-v1", DEALS_KEY = "da-deals-v1";
+
+  function loadProfile() {
+    try {
+      var raw = localStorage.getItem(PROFILE_KEY);
+      if (raw) return Object.assign({}, DEFAULT_PROFILE, JSON.parse(raw));
+    } catch (e) {}
+    return Object.assign({}, DEFAULT_PROFILE);
+  }
+  function saveProfile(p) { try { localStorage.setItem(PROFILE_KEY, JSON.stringify(p)); } catch (e) {} }
+  function loadDeals() {
+    try { return JSON.parse(localStorage.getItem(DEALS_KEY) || "[]"); } catch (e) { return []; }
+  }
+  function saveDeals(d) { try { localStorage.setItem(DEALS_KEY, JSON.stringify(d)); } catch (e) {} }
+
+  var profile = loadProfile();
+  var editingId = null;
+
+  var profileFields = [
+    ["pDscrRate", "dscrRate", 100], ["pLtv", "ltv", 100], ["pTerm", "termYears", 1],
+    ["pFloor", "dscrFloor", 1], ["pHeloc", "helocRate", 100], ["pClosing", "closingCostPct", 100],
+    ["pRatio", "taxAssessmentRatio", 100], ["pMillage", "millage", 1000],
+    ["pVacancy", "vacancyPct", 100], ["pMaint", "maintenanceMonthly", 1]
+  ];
+  profileFields.forEach(function (pf) {
+    var el = $(pf[0]);
+    el.value = Math.round(profile[pf[1]] * pf[2] * 1000) / 1000;
+    el.addEventListener("input", function () {
+      var v = Number(el.value);
+      if (isFinite(v)) { profile[pf[1]] = v / pf[2]; saveProfile(profile); render(); }
+    });
+  });
+
+  function num(id) {
+    var v = Number($(id).value);
+    return isFinite(v) ? v : 0;
+  }
+  function inputs() {
+    return {
+      price: num("price"),
+      rent: num("rent"),
+      hoaMonthly: num("hoa"),
+      insuranceMonthly: num("insurance"),
+      taxesMonthly: $("taxesAuto").checked ? null : num("taxesMonthly"),
+      rehab: num("rehab"),
+      listedTaxesAnnual: $("listedTaxes").value ? num("listedTaxes") : null
+    };
+  }
+
+  /* ---------- what-if sliders ---------- */
+
+  var wTouched = false;
+  function syncSliders(p) {
+    var wr = $("wRent"), wp = $("wPrice"), wa = $("wRate");
+    wr.min = Math.round(p.rent * 0.7); wr.max = Math.round(p.rent * 1.3); wr.step = 25;
+    wp.min = Math.round(p.price * 0.8 / 1000) * 1000; wp.max = Math.round(p.price * 1.2 / 1000) * 1000; wp.step = 5000;
+    if (!wTouched) { wr.value = p.rent; wp.value = p.price; wa.value = profile.dscrRate; }
+  }
+  ["wRent", "wRate", "wPrice"].forEach(function (id) {
+    $(id).addEventListener("input", function () { wTouched = true; renderWhatIf(); });
+  });
+  function renderWhatIf() {
+    var p = inputs();
+    if (p.price <= 0 || p.rent <= 0) return;
+    var rent = Number($("wRent").value), price = Number($("wPrice").value), rate = Number($("wRate").value);
+    $("wRentL").textContent = money(rent) + "/mo";
+    $("wPriceL").textContent = money(price);
+    $("wRateL").textContent = pct(rate, 3);
+    var a = analyze(
+      Object.assign({}, p, { rent: rent, price: price }),
+      Object.assign({}, profile, { dscrRate: rate })
+    );
+    $("wDscr").textContent = a.dscr.toFixed(2);
+    $("wDscr").className = "v " + (a.dscr >= profile.dscrFloor ? "pos" : "neg");
+    $("wCarry").textContent = signed(a.carry);
+    $("wCarry").className = "v " + (a.carry >= 0 ? "pos" : "neg");
+    $("wAllIn").textContent = signed(a.allIn);
+    $("wAllIn").className = "v " + (a.allIn >= 0 ? "pos" : "neg");
+  }
+
+  /* ---------- render ---------- */
+
+  function setMoneyRow(id, v, perMo) {
+    $(id).textContent = money(v) + (perMo ? "/mo" : "");
+  }
+  function tone(el, good) { el.classList.remove("pos", "neg"); el.classList.add(good ? "pos" : "neg"); }
+
+  function render() {
+    var p = inputs();
+    var ready = p.price > 0 && p.rent > 0;
+    $("results").hidden = !ready;
+    $("bar").hidden = !ready;
+    $("saveBtn").disabled = !ready || !$("address").value.trim();
+    $("taxesManualWrap").hidden = $("taxesAuto").checked;
+    if (!ready) return;
+
+    var a = analyze(p, profile);
+    var be = breakEvens(p, profile, a);
+
+    var vd = $("verdict");
+    vd.className = "verdict " + a.verdict;
+    $("dscrN").textContent = a.dscr.toFixed(2);
+    $("dscrV").textContent = a.verdict;
+    $("dscrSub").textContent = a.verdict === "PASS" ? "clears the lender floor" : "below the " + profile.dscrFloor.toFixed(2) + " floor";
+
+    $("taxWarn").hidden = !a.ownerOccWarn;
+    if (a.ownerOccWarn) {
+      $("taxWarn").textContent = "Listing taxes (" + money(p.listedTaxesAnnual / 12) +
+        "/mo) look like the 4% owner-occupied rate. Underwriting uses the 6% investment rate: " +
+        money(a.taxes) + "/mo.";
+    }
+
+    $("pitiaTitle").textContent = "PITIA — DSCR loan leg (" + pct(profile.ltv, 0) + " LTV @ " + pct(profile.dscrRate, 2) + ")";
+    $("helocTitle").textContent = "HELOC leg (" + pct(profile.helocRate, 2) + " interest-only)";
+    $("piK").textContent = "P&I (" + profile.termYears + "yr)";
+    $("taxK").textContent = "Taxes " + (a.taxesComputed ? "(6% investment ratio)" : "(manual)");
+    $("vacK").textContent = "Vacancy reserve (" + pct(profile.vacancyPct, 0) + ")";
+    $("beFloorK").textContent = "Rent for DSCR " + profile.dscrFloor.toFixed(2);
+
+    setMoneyRow("loan", a.loan); setMoneyRow("pi", a.pi, true);
+    setMoneyRow("taxes", a.taxes, true); setMoneyRow("ins", p.insuranceMonthly, true);
+    setMoneyRow("hoaV", p.hoaMonthly, true); setMoneyRow("pitia", a.pitia, true);
+    setMoneyRow("down", a.down); setMoneyRow("closing", a.closing);
+    setMoneyRow("rehabV", p.rehab); setMoneyRow("draw", a.draw); setMoneyRow("helocIO", a.helocIO, true);
+
+    $("cfRent").textContent = signed(p.rent);
+    $("cfPitia").textContent = signed(-a.pitia);
+    $("cfHeloc").textContent = signed(-a.helocIO);
+    $("carry").textContent = signed(a.carry) + "/mo"; tone($("carry"), a.carry >= 0);
+    $("vac").textContent = signed(-a.vac);
+    $("maint").textContent = signed(-profile.maintenanceMonthly);
+    $("allIn").textContent = signed(a.allIn) + "/mo (" + signed(a.allIn * 12) + "/yr)";
+    tone($("allIn"), a.allIn >= 0);
+
+    $("grm").textContent = a.grm.toFixed(1);
+    $("cap").textContent = pct(a.cap, 2);
+    $("basis").textContent = money(a.basis);
+    $("noi").textContent = money(a.noi);
+
+    $("beFloor").textContent = money(be.floor) + "/mo"; tone($("beFloor"), p.rent >= be.floor);
+    $("beZero").textContent = money(be.zero) + "/mo"; tone($("beZero"), p.rent >= be.zero);
+    $("beZeroAll").textContent = money(be.zeroAll) + "/mo"; tone($("beZeroAll"), p.rent >= be.zeroAll);
+    $("bePriceRow").style.display = be.maxPrice == null ? "none" : "";
+    if (be.maxPrice != null) {
+      $("bePrice").textContent = money(be.maxPrice); tone($("bePrice"), p.price <= be.maxPrice);
+    }
+
+    $("barChip").className = "chip big " + a.verdict;
+    $("barChip").textContent = "DSCR " + a.dscr.toFixed(2) + " · " + a.verdict;
+    $("barCarry").textContent = signed(a.allIn) + "/mo";
+    tone($("barCarry"), a.allIn >= 0);
+
+    syncSliders(p);
+    renderWhatIf();
+  }
+
+  ["address", "nickname", "price", "rent", "hoa", "insurance", "rehab", "taxesMonthly", "listedTaxes"]
+    .forEach(function (id) { $(id).addEventListener("input", function () { wTouched = false; render(); }); });
+  $("taxesAuto").addEventListener("change", function () { wTouched = false; render(); });
+
+  /* ---------- saved deals ---------- */
+
+  function renderDeals() {
+    var deals = loadDeals();
+    var list = $("dealsList");
+    if (!deals.length) {
+      list.innerHTML = '<p class="empty">Nothing saved yet — run a deal and hit “Save deal”.</p>';
+      return;
+    }
+    list.textContent = "";
+    deals
+      .map(function (d) { return { d: d, a: analyze(d.inputs, d.profile) }; })
+      .sort(function (x, y) { return y.a.dscr - x.a.dscr; })
+      .forEach(function (row) {
+        var d = row.d, a = row.a;
+        var el = document.createElement("div");
+        el.className = "deal";
+        var left = document.createElement("div");
+        var name = document.createElement("div");
+        name.className = "name"; name.textContent = d.nickname || d.address || "(unnamed)";
+        var addr = document.createElement("div");
+        addr.className = "addr"; addr.textContent = d.nickname ? d.address : "";
+        left.appendChild(name); if (addr.textContent) left.appendChild(addr);
+        var right = document.createElement("div");
+        right.className = "m";
+        right.innerHTML = '<span class="chip ' + a.verdict + '">' + a.dscr.toFixed(2) + "</span> " +
+          '<span class="' + (a.allIn >= 0 ? "pos" : "neg") + '">' + signed(a.allIn) + "/mo</span><br>";
+        var open = document.createElement("button");
+        open.className = "ghost"; open.textContent = "Open";
+        open.addEventListener("click", function () { loadDeal(d.id); });
+        var del = document.createElement("button");
+        del.className = "ghost"; del.textContent = "Delete"; del.style.marginLeft = "6px";
+        del.addEventListener("click", function () {
+          if (!confirm("Delete this deal?")) return;
+          saveDeals(loadDeals().filter(function (x) { return x.id !== d.id; }));
+          if (editingId === d.id) editingId = null;
+          renderDeals();
+        });
+        right.appendChild(open); right.appendChild(del);
+        el.appendChild(left); el.appendChild(right);
+        list.appendChild(el);
+      });
+  }
+
+  function loadDeal(id) {
+    var d = loadDeals().find(function (x) { return x.id === id; });
+    if (!d) return;
+    editingId = id;
+    $("address").value = d.address || "";
+    $("nickname").value = d.nickname || "";
+    $("price").value = d.inputs.price || "";
+    $("rent").value = d.inputs.rent || "";
+    $("hoa").value = d.inputs.hoaMonthly || 0;
+    $("insurance").value = d.inputs.insuranceMonthly || 0;
+    $("rehab").value = d.inputs.rehab || 0;
+    $("taxesAuto").checked = d.inputs.taxesMonthly == null;
+    $("taxesMonthly").value = d.inputs.taxesMonthly == null ? "" : d.inputs.taxesMonthly;
+    $("listedTaxes").value = d.inputs.listedTaxesAnnual == null ? "" : d.inputs.listedTaxesAnnual;
+    profile = Object.assign({}, DEFAULT_PROFILE, d.profile);
+    profileFields.forEach(function (pf) {
+      $(pf[0]).value = Math.round(profile[pf[1]] * pf[2] * 1000) / 1000;
+    });
+    wTouched = false;
+    render();
+    window.scrollTo({ top: 0 });
+    $("saveBtn").textContent = "Update deal";
+  }
+
+  $("saveBtn").addEventListener("click", function () {
+    var deals = loadDeals();
+    var rec = {
+      id: editingId || String(Date.now()) + Math.random().toString(36).slice(2, 7),
+      address: $("address").value.trim(),
+      nickname: $("nickname").value.trim(),
+      inputs: inputs(),
+      profile: Object.assign({}, profile),
+      savedAt: Date.now()
+    };
+    var i = deals.findIndex(function (x) { return x.id === rec.id; });
+    if (i >= 0) deals[i] = rec; else deals.push(rec);
+    saveDeals(deals);
+    editingId = rec.id;
+    $("saveBtn").textContent = "Update deal";
+    renderDeals();
+  });
+
+  renderDeals();
+  render();
+})();
+</script>

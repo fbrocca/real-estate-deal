@@ -73,6 +73,14 @@ For access from anywhere (not just home Wi-Fi), the SQLite database needs to
 move to a hosted DB (e.g. Turso — same Drizzle schema) before deploying to
 Vercel; the code is structured so that's a contained swap.
 
+### Pocket edition
+
+`pocket/deal-analyzer-mobile.html` is a self-contained, single-file version of
+the underwriting engine (no server, no APIs — manual entry, saved deals in
+browser localStorage). It exists so the calculator can be used from a phone
+anywhere before the full app is deployed; it mirrors `src/lib/underwriting.ts`
+and must be kept in sync if the engine's math changes.
+
 ## Tests
 
 ```bash
