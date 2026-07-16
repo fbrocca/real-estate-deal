@@ -188,11 +188,11 @@ export default function MapPanel({ lat, lng, address, onUseRent }: MapPanelProps
       ) : null}
       {msg ? <p className="mb-2 text-xs text-slate-500">{msg}</p> : null}
 
-      <div className="overflow-hidden rounded-lg border border-slate-800">
+      <div className="h-[320px] overflow-hidden rounded-lg border border-slate-800 sm:h-[440px]">
         <MapContainer
           center={[lat, lng]}
           zoom={14}
-          style={{ height: 440, width: "100%", background: "#0f172a" }}
+          style={{ height: "100%", width: "100%", background: "#0f172a" }}
           scrollWheelZoom
         >
           <TileLayer

@@ -173,11 +173,11 @@ export default function ComparePage() {
           <table className="w-full text-sm tabular-nums">
             <thead>
               <tr className="border-b border-slate-800">
-                <th className="px-3 py-3 text-left text-xs font-medium text-slate-500">
+                <th className="sticky left-0 z-[1] bg-slate-900 px-3 py-3 text-left text-xs font-medium text-slate-500">
                   Metric
                 </th>
                 {picked.map(({ deal }) => (
-                  <th key={deal.id} className="px-3 py-3 text-left">
+                  <th key={deal.id} className="min-w-[150px] px-3 py-3 text-left">
                     <Link
                       href={`/?deal=${deal.id}`}
                       className="font-semibold text-slate-100 hover:text-emerald-400"
@@ -197,7 +197,9 @@ export default function ComparePage() {
                 const best = m.higherIsBetter ? Math.max(...values) : Math.min(...values);
                 return (
                   <tr key={m.label} className="border-b border-slate-800/60">
-                    <td className="px-3 py-2 text-slate-400">{m.label}</td>
+                    <td className="sticky left-0 z-[1] whitespace-nowrap bg-slate-900 px-3 py-2 text-slate-400">
+                      {m.label}
+                    </td>
                     {picked.map(({ a, deal }, i) => {
                       const isBest = values[i] === best && new Set(values).size > 1;
                       const tone = m.tone?.(a) ?? "neutral";

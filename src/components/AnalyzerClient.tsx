@@ -7,7 +7,7 @@ import { analyzeDeal, FinancingProfile, PropertyInputs } from "@/lib/underwritin
 import { DEFAULT_PROFILE } from "@/lib/defaults";
 import type { PropertyFacts } from "@/lib/rentcast";
 import type { DealRow } from "@/lib/types";
-import { money } from "@/lib/format";
+import { money, num, signedMoney } from "@/lib/format";
 import { Card, Field, NumberInput, inputCls } from "./ui";
 import { ResultsPanel } from "./ResultsPanel";
 import { SensitivityPanel } from "./SensitivityPanel";
@@ -235,7 +235,7 @@ export function AnalyzerClient() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 pb-16 lg:pb-0">
       <Card title={loadedDeal ? "Editing saved deal" : "Property lookup"}>
         <div className="flex flex-col gap-2 sm:flex-row">
           <input
@@ -402,6 +402,36 @@ export function AnalyzerClient() {
       </div>
 
       {analysis ? <SensitivityPanel inputs={inputs} profile={profile} /> : null}
+
+      {analysis ? (
+        <div className="fixed inset-x-0 bottom-0 z-20 border-t border-slate-800 bg-slate-950/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden">
+          <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-2">
+            <span
+              className={`rounded-md px-2.5 py-1 text-sm font-bold ${
+                analysis.dscrVerdict === "PASS"
+                  ? "bg-emerald-500/15 text-emerald-400"
+                  : analysis.dscrVerdict === "MARGINAL"
+                    ? "bg-amber-500/15 text-amber-400"
+                    : "bg-rose-500/15 text-rose-400"
+              }`}
+            >
+              DSCR {num(analysis.dscr, 2)} · {analysis.dscrVerdict}
+            </span>
+            <span className="text-right">
+              <span
+                className={`block text-sm font-bold tabular-nums ${
+                  analysis.allInCarry >= 0 ? "text-emerald-400" : "text-rose-400"
+                }`}
+              >
+                {signedMoney(analysis.allInCarry)}/mo
+              </span>
+              <span className="block text-[10px] leading-tight text-slate-500">
+                all-in carry
+              </span>
+            </span>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

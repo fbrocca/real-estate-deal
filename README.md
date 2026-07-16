@@ -54,6 +54,25 @@ requests).
 
 Data lives in `data/app.db` (SQLite, auto-created, gitignored).
 
+## Use it from your phone
+
+The app is mobile-optimized (sticky DSCR/carry bar on the analyzer, card view
+for deals, swipeable comparison table, touch-friendly map). To open it on your
+phone while it runs on your computer:
+
+```bash
+npm run dev:lan        # or: npm run build && npm run start:lan
+```
+
+Then find your computer's local IP (macOS: `ipconfig getifaddr en0`,
+Windows: `ipconfig`) and open `http://<that-ip>:3000` on your phone —
+same Wi-Fi network required. Your deals live in the SQLite file on the
+computer, so phone and desktop see the same data.
+
+For access from anywhere (not just home Wi-Fi), the SQLite database needs to
+move to a hosted DB (e.g. Turso — same Drizzle schema) before deploying to
+Vercel; the code is structured so that's a contained swap.
+
 ## Tests
 
 ```bash

@@ -102,7 +102,93 @@ export default function DealsPage() {
           </p>
         </Card>
       ) : (
-        <Card className="overflow-x-auto p-0">
+        <>
+        {/* Mobile: sort picker + cards */}
+        <div className="flex items-center gap-2 md:hidden">
+          <span className="text-xs text-slate-500">Sort by</span>
+          <select
+            value={sortKey}
+            onChange={(e) => setSortKey(e.target.value as SortKey)}
+            className="rounded-md border border-slate-700 bg-slate-950 px-2 py-1.5 text-sm text-slate-200"
+          >
+            <option value="dscr">DSCR</option>
+            <option value="allInCarry">All-in carry</option>
+            <option value="capRate">Cap rate</option>
+            <option value="allInBasis">Basis</option>
+            <option value="updatedAt">Last updated</option>
+          </select>
+        </div>
+        <div className="space-y-3 md:hidden">
+          {rows.map(({ deal, a }) => (
+            <Card key={deal.id}>
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <Link
+                    href={`/?deal=${deal.id}`}
+                    className="block truncate font-medium text-slate-100 hover:text-emerald-400"
+                  >
+                    {deal.nickname || deal.address}
+                  </Link>
+                  {deal.nickname ? (
+                    <div className="truncate text-xs text-slate-500">{deal.address}</div>
+                  ) : null}
+                </div>
+                <select
+                  value={deal.status}
+                  onChange={(e) => setStatus(deal.id, e.target.value as DealStatus)}
+                  className={`shrink-0 rounded px-2 py-1 text-xs ${STATUS_TONE[deal.status]} border-0 bg-slate-800`}
+                >
+                  {Object.entries(STATUS_LABELS).map(([v, l]) => (
+                    <option key={v} value={v}>
+                      {l}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 text-sm tabular-nums">
+                <div>
+                  <div className="text-xs text-slate-500">DSCR</div>
+                  <div
+                    className={`font-semibold ${
+                      a.dscrVerdict === "PASS"
+                        ? "text-emerald-400"
+                        : a.dscrVerdict === "MARGINAL"
+                          ? "text-amber-400"
+                          : "text-rose-400"
+                    }`}
+                  >
+                    {num(a.dscr, 2)} {a.dscrVerdict}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-xs text-slate-500">All-in carry</div>
+                  <div className={a.allInCarry >= 0 ? "text-emerald-400" : "text-rose-400"}>
+                    {signedMoney(a.allInCarry)}/mo
+                  </div>
+                </div>
+                <div>
+                  <div className="text-xs text-slate-500">Cap · Basis</div>
+                  <div className="text-slate-200">
+                    {pct(a.capRate, 1)} · {money(a.allInBasis)}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-xs text-slate-500">Rent</div>
+                  <div className="text-slate-200">{money(deal.inputs.rent)}/mo</div>
+                </div>
+              </div>
+              <button
+                onClick={() => remove(deal.id)}
+                className="mt-3 text-xs text-slate-500 hover:text-rose-400"
+              >
+                Delete
+              </button>
+            </Card>
+          ))}
+        </div>
+
+        {/* Desktop: table */}
+        <Card className="hidden overflow-x-auto p-0 md:block">
           <table className="w-full text-sm tabular-nums">
             <thead>
               <tr className="border-b border-slate-800 text-xs text-slate-500">
@@ -170,6 +256,7 @@ export default function DealsPage() {
             </tbody>
           </table>
         </Card>
+        </>
       )}
     </div>
   );
